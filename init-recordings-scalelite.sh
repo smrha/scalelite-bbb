@@ -1,40 +1,25 @@
 #!/bin/bash
 
-source ./.env
-SCALELITE_RECORDING_DIR=${SCALELITE_RECORDING_DIR-/mnt/scalelite-recordings/var/bigbluebutton}
-
-echo 'Add dependencies...'
-apt-get install -y rsync
-
 echo 'Add the bigbluebutton user...'
-id -u bigbluebutton &>/dev/null || useradd -m -d /home/bigbluebutton -s /bin/bash bigbluebutton
-if [ ! -d "/home/bigbluebutton/.ssh" ]; then
-  su - bigbluebutton -s /bin/bash -c 'mkdir ~/.ssh && touch ~/.ssh/authorized_keys'
-fi
+useradd -m -d /home/bigbluebutton -s /bin/bash bigbluebutton
+su - bigbluebutton -s /bin/bash -c 'mkdir ~/.ssh && touch ~/.ssh/authorized_keys'
 
 echo 'Create a new group with GID 2000...'
-if grep -q scalelite-spool /etc/group; then
-  echo "group scalelite-spool exists"
-else
-  echo "group scalelite-spool created"
-  groupadd -g 2000 scalelite-spool
-fi
+groupadd -g 2000 scalelite-spool
 
 echo 'Add the bigbluebutton user to the group...'
 usermod -a -G scalelite-spool bigbluebutton
 
-echo 'Create the directory structure for recording ...'
-mkdir -p $SCALELITE_RECORDING_DIR/spool
-mkdir -p $SCALELITE_RECORDING_DIR/recording/scalelite
-mkdir -p $SCALELITE_RECORDING_DIR/published
-mkdir -p $SCALELITE_RECORDING_DIR/unpublished
-chown -R 1000:2000 $SCALELITE_RECORDING_DIR
-chmod -R 0775 $SCALELITE_RECORDING_DIR
+echo 'Create the directory structure for storing recording ...'
+mkdir -p /var/bigbluebutton/spool
+mkdir -p /var/bigbluebutton/recording/scalelite
+mkdir -p /var/bigbluebutton/published
+mkdir -p /var/bigbluebutton/unpublished
+chown -R 1000:2000 /var/bigbluebutton/
+chmod -R 0775 /var/bigbluebutton/
 
-echo 'Create symbolic link to the directory structure for uploading ...'
-if [ -d "/var/bigbluebutton" ]; then
-  mv /var/bigbluebutton /var/.bigbluebutton
-elif [ -e "/var/bigbluebutton" ]; then
-  rm /var/bigbluebutton
-fi
-ln -s $SCALELITE_RECORDING_DIR /var/bigbluebutton
+echo 'Create the mouniting point directory for recording transfer from BigBlueButton...'
+mkdir -p /mnt/scalelite-recordings/var
+chown -R 1000:2000 /mnt/scalelite-recordings/
+chmod -R 0775 /mnt/scalelite-recordings/
+ln -s /var/bigbluebutton /mnt/scalelite-recordings/var/bigbluebutton
