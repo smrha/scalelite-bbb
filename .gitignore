@@ -1,0 +1,16 @@
+.env
+
+/redis/log*
+
+/scalelite/log*
+/scalelite/tmp*
+
+/data/*
+!/data/nginx/
+!/data/proxy/
+/data/redis/db/*
+!/data/redis/
+
+/tmp*
+
+/log*
